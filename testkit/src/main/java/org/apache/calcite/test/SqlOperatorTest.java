@@ -8836,6 +8836,12 @@ public class SqlOperatorTest {
     f.checkScalar("FORMAT_DATE('The date is: %x', DATE '2008-12-25')",
         "The date is: 12/25/08",
         "VARCHAR(2000) NOT NULL");
+    f.checkScalar("FORMAT_DATE('The iso year-week is: %G-%V', DATE '2023-01-01')",
+        "The iso year-week is: 2022-52",
+        "VARCHAR(2000) NOT NULL");
+    f.checkScalar("FORMAT_DATE('The iso year-week is: %g-%V', DATE '2023-01-01')",
+        "The iso year-week is: 22-52",
+        "VARCHAR(2000) NOT NULL");
   }
 
   @Test void testFormatTimestamp() {

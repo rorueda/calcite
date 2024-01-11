@@ -41,6 +41,8 @@ import static org.apache.calcite.util.format.FormatElementEnum.FF5;
 import static org.apache.calcite.util.format.FormatElementEnum.FF6;
 import static org.apache.calcite.util.format.FormatElementEnum.HH24;
 import static org.apache.calcite.util.format.FormatElementEnum.IW;
+import static org.apache.calcite.util.format.FormatElementEnum.IYY;
+import static org.apache.calcite.util.format.FormatElementEnum.IYYYY;
 import static org.apache.calcite.util.format.FormatElementEnum.MI;
 import static org.apache.calcite.util.format.FormatElementEnum.MM;
 import static org.apache.calcite.util.format.FormatElementEnum.MON;
@@ -101,6 +103,8 @@ public class FormatModels {
     map.put("%E4S", FF4);
     map.put("%E5S", FF5);
     map.put("%E*S", FF6);
+    map.put("%G", IYYYY);
+    map.put("%g", IYY);
     map.put("%H", HH24);
     map.put("%j", DDD);
     map.put("%M", MI);

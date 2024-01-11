@@ -16,6 +16,11 @@
  */
 package org.apache.calcite.util.format;
 
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+import java.time.temporal.IsoFields;
+
 import org.apache.calcite.avatica.util.DateTimeUtils;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -116,13 +121,24 @@ public enum FormatElementEnum implements FormatElement {
     }
   },
   IW("The ISO 8601 week number of the year (Monday as the first day of the week) "
-      + "as a decimal number (01-53)") {
+      + "as a decimal number (01-53). If the week containing January 1 has four or more days "
+      + "in the new year, then it is week 1; otherwise it is week 53 of the previous year, "
+      + "and the next week is week 1.") {
     @Override public String format(Date date) {
-      // TODO: ensure this is isoweek
-      final Calendar calendar = Work.get().calendar;
-      calendar.setTime(date);
-      calendar.setFirstDayOfWeek(Calendar.MONDAY);
-      return String.format(Locale.ROOT, "%02d", calendar.get(Calendar.WEEK_OF_YEAR));
+      return String.format(Locale.ROOT, "%02d",
+          toZonedDateTimeAtDefaultZone(date).get(IsoFields.WEEK_OF_WEEK_BASED_YEAR));
+    }
+  },
+  IYY("The ISO 8601 year without century as a decimal number. Each ISO year begins on "
+      + "the Monday before the first Thursday of the Gregorian calendar year.") {
+    @Override public String format(Date date) {
+      return Integer.toString(toZonedDateTimeAtDefaultZone(date).get(IsoFields.WEEK_BASED_YEAR) % 100);
+    }
+  },
+  IYYYY("The ISO 8601 year with century as a decimal number. Each ISO year begins on "
+      + "the Monday before the first Thursday of the Gregorian calendar year.") {
+    @Override public String format(Date date) {
+      return Integer.toString(toZonedDateTimeAtDefaultZone(date).get(IsoFields.WEEK_BASED_YEAR));
     }
   },
   MI("The minute as a decimal number (00-59)") {
@@ -176,7 +192,6 @@ public enum FormatElementEnum implements FormatElement {
     @Override public String format(Date date) {
       final Calendar calendar = Work.get().calendar;
       calendar.setTime(date);
-      calendar.setFirstDayOfWeek(Calendar.SUNDAY);
       return String.format(Locale.ROOT, "%02d", calendar.get(Calendar.WEEK_OF_YEAR));
     }
   },
@@ -219,6 +234,7 @@ public enum FormatElementEnum implements FormatElement {
 
     final Calendar calendar =
         Calendar.getInstance(DateTimeUtils.DEFAULT_ZONE, Locale.ROOT);
+
     final DateFormat eeeeFormat = new SimpleDateFormat("EEEE", Locale.ROOT);
     final DateFormat eeeFormat = new SimpleDateFormat("EEE", Locale.ROOT);
     final DateFormat mmmFormat = new SimpleDateFormat("MMM", Locale.ROOT);
@@ -230,5 +246,15 @@ public enum FormatElementEnum implements FormatElement {
     final DateFormat sssssFormat = new SimpleDateFormat("SSSSS", Locale.ROOT);
     final DateFormat ssssssFormat = new SimpleDateFormat("SSSSSS", Locale.ROOT);
     final DateFormat yyFormat = new SimpleDateFormat("yy", Locale.ROOT);
+  }
+
+  private static ZonedDateTime toZonedDateTimeAtDefaultZone(Date date) {
+    if (date instanceof java.sql.Date) {
+      // since there is no time component, the default zone is assumed
+      return ZonedDateTime.of(((java.sql.Date) date).toLocalDate(),
+          LocalTime.MIN, DateTimeUtils.DEFAULT_ZONE.toZoneId());
+    } else {
+      return date.toInstant().atZone(DateTimeUtils.DEFAULT_ZONE.toZoneId());
+    }
   }
 }
